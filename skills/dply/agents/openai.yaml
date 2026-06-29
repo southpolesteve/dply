@@ -1,0 +1,4 @@
+interface:
+  display_name: "dply"
+  short_description: "Deploy local web projects with one command"
+  default_prompt: "Use $dply to deploy the current local web project and report the live URL."

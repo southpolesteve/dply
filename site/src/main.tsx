@@ -5,6 +5,7 @@ import { createRoot } from "react-dom/client";
 import "./styles.css";
 
 const installCommand = "curl -fsSL https://dply.southpolesteve.com/install.sh | bash";
+const skillUrl = "https://dply.southpolesteve.com/SKILL.md";
 
 const supportedTargets = [
   "Vite",
@@ -157,6 +158,16 @@ function App() {
           <p>
             Every deploy prints the detected project shape, selected adapter, command logs, live
             URL, claim path for temporary previews, and verification result.
+          </p>
+          <Surface className="skillCallout">
+            <span>Agent skill</span>
+            <a href="/SKILL.md">
+              <code>{skillUrl}</code>
+            </a>
+          </Surface>
+          <p>
+            Point an agent at the skill URL for one-off use. If it supports persistent skills,
+            install the <code>skills/dply</code> folder from the repo.
           </p>
         </div>
       </section>

@@ -34,6 +34,18 @@ This is intentionally not a general deployment platform. If a project needs a
 custom durable production setup, ask the agent to write normal Cloudflare /
 Wrangler config for that project.
 
+## Agent Skill
+
+Point an agent at the skill:
+
+```text
+https://dply.southpolesteve.com/SKILL.md
+```
+
+That is the best default for arbitrary agents: one stable file with the install command,
+deployment policy, success reporting, and failure behavior. For agents that support persistent
+skills, install the `skills/dply` folder from this repo.
+
 ## Development
 
 ```bash

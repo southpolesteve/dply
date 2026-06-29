@@ -302,6 +302,36 @@ code {
   margin: 18px 0 0;
 }
 
+.noteText code {
+  white-space: normal;
+}
+
+.skillCallout {
+  background: var(--panel);
+  border: 1px solid rgb(22 20 18 / 10%);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 16px;
+}
+
+.skillCallout span {
+  color: var(--accent-strong);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.skillCallout a {
+  color: var(--ink);
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+.skillCallout a:hover {
+  color: var(--accent-strong);
+}
+
 .example {
   align-content: start;
   background: var(--panel);

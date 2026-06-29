@@ -8,7 +8,7 @@
     "build": "bun run build:cli && bun run build:site && bun run build:release",
     "build:cli": "bun build src/main.ts --target=node --outfile dist/dply && chmod +x dist/dply",
     "build:release": "mkdir -p dist/release && cp dist/dply dist/release/dply && chmod +x dist/release/dply",
-    "build:site": "vp build && cp scripts/install.sh dist/site/install.sh",
+    "build:site": "vp build && cp scripts/install.sh dist/site/install.sh && cp skills/dply/SKILL.md dist/site/SKILL.md",
     "check": "tsc --noEmit",
     "deploy:site": "bun run build && npx --yes wrangler@latest deploy",
     "dev": "vp dev --host 0.0.0.0",
