@@ -37,7 +37,6 @@ function App() {
   return (
     <main className="page">
       <header className="hero">
-        <p className="brand">dply</p>
         <h1>
           <span>No auth.</span>
           <span>No config.</span>

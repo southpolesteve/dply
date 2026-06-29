@@ -37,19 +37,11 @@ a {
 .page {
   margin: 0 auto;
   max-width: 880px;
-  padding: 54px 24px 72px;
+  padding: 48px 24px 72px;
 }
 
 .hero {
   padding-bottom: 42px;
-}
-
-.brand {
-  color: var(--accent);
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  font-size: 0.95rem;
-  font-weight: 800;
-  margin: 0 0 22px;
 }
 
 h1,
