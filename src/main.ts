@@ -7,7 +7,7 @@ import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-const VERSION = "0.1.2";
+const VERSION = "0.1.3";
 
 type Action = {
   label: string;
@@ -417,7 +417,11 @@ async function ensurePackageDependencies(dir: string, actions: Action[]) {
 }
 
 async function wranglerIsAuthenticated(actions: Action[]): Promise<boolean> {
-  const result = await runCommand("npx", ["--yes", "wrangler@latest", "whoami"], process.cwd());
+  const result = await runCommand(
+    "npx",
+    ["--yes", "wrangler@latest", "whoami", "--json"],
+    process.cwd(),
+  );
   if (result.code === 0) {
     actions.push({
       label: "Detected",
