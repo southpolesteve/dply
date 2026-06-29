@@ -7,7 +7,7 @@ import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-const VERSION = "0.1.1";
+const VERSION = "0.1.2";
 
 type Action = {
   label: string;
@@ -30,6 +30,25 @@ type DeployPlan = {
   workerEntry?: string;
   generatedProject?: string;
   buildLogsDir?: string;
+  delegatedDeploy?: DelegatedDeploy;
+};
+
+type DelegatedDeploy = {
+  command: string;
+  args: string[];
+  dryRunArgs: string[];
+  logName: string;
+  failureCode: string;
+  toolName: string;
+};
+
+type DeployResult = {
+  name: string;
+  compatibilityDate?: string;
+  output: string;
+  liveUrl?: string;
+  claimUrl?: string;
+  verification?: { ok: boolean; status?: number; error?: string };
 };
 
 const STATIC_EXTENSIONS = new Set([
@@ -86,7 +105,7 @@ async function main() {
       ? "authenticated Cloudflare account"
       : "temporary Cloudflare preview account";
 
-    const deploy = await deployWithWrangler(plan, mode, dryRun, actions);
+    const deploy = await deployPlan(plan, mode, dryRun, actions);
     printSuccess({ plan, deploy, mode, dryRun, actions });
   } catch (error) {
     if (error instanceof DplyError) {
@@ -233,6 +252,25 @@ async function planFile(file: string, actions: Action[]): Promise<DeployPlan> {
 async function planDirectory(dir: string, actions: Action[]): Promise<DeployPlan> {
   const packageJsonPath = path.join(dir, "package.json");
 
+  if (existsSync(packageJsonPath)) {
+    const packageJson = JSON.parse(await readFile(packageJsonPath, "utf8")) as PackageJson;
+    if (looksLikeNext(packageJson, dir)) {
+      actions.push({
+        label: "Detected",
+        detail: "Next.js app from package.json and project files.",
+      });
+      return planNextApp(dir, packageJson, actions);
+    }
+
+    if (looksLikeVite(packageJson)) {
+      actions.push({
+        label: "Detected",
+        detail: "Vite app from package.json.",
+      });
+      return planPackageApp(dir, packageJson, actions);
+    }
+  }
+
   if (hasWranglerConfig(dir)) {
     actions.push({
       label: "Detected",
@@ -243,17 +281,6 @@ async function planDirectory(dir: string, actions: Action[]): Promise<DeployPlan
       source: dir,
       root: dir,
     };
-  }
-
-  if (existsSync(packageJsonPath)) {
-    const packageJson = JSON.parse(await readFile(packageJsonPath, "utf8")) as PackageJson;
-    if (looksLikeVite(packageJson)) {
-      actions.push({
-        label: "Detected",
-        detail: "Vite app from package.json.",
-      });
-      return planPackageApp(dir, packageJson, actions);
-    }
   }
 
   if (existsSync(path.join(dir, "index.html"))) {
@@ -288,28 +315,7 @@ async function planPackageApp(
   packageJson: PackageJson,
   actions: Action[],
 ): Promise<DeployPlan> {
-  const logsDir = makeLogsDir(dir);
-  const packageManager = detectPackageManager(dir);
-  actions.push({
-    label: "Selected",
-    detail: `${packageManager.name} because ${packageManager.reason}.`,
-  });
-
-  if (!existsSync(path.join(dir, "node_modules"))) {
-    await mkdir(logsDir, { recursive: true });
-    await runLoggedCommand(
-      packageManager.installCommand,
-      packageManager.installArgs,
-      dir,
-      logsDir,
-      actions,
-    );
-  } else {
-    actions.push({
-      label: "Skipped",
-      detail: "dependency install because node_modules already exists.",
-    });
-  }
+  const { logsDir, packageManager } = await ensurePackageDependencies(dir, actions);
 
   if (!packageJson.scripts?.build) {
     throw new DplyError({
@@ -354,6 +360,62 @@ async function planPackageApp(
   };
 }
 
+async function planNextApp(
+  dir: string,
+  _packageJson: PackageJson,
+  actions: Action[],
+): Promise<DeployPlan> {
+  const { logsDir } = await ensurePackageDependencies(dir, actions);
+
+  actions.push({
+    label: "Selected",
+    detail:
+      "Vinext because this is a Next.js app and Vinext is the Vite-based Cloudflare deploy path for Next.js.",
+  });
+
+  return {
+    adapter: "Next.js via Vinext",
+    source: dir,
+    root: dir,
+    buildLogsDir: logsDir,
+    delegatedDeploy: {
+      command: "npx",
+      args: ["--yes", "vinext@latest", "deploy"],
+      dryRunArgs: ["--dry-run"],
+      logName: "vinext-deploy",
+      failureCode: "VNEXT_DEPLOY_FAILED",
+      toolName: "Vinext",
+    },
+  };
+}
+
+async function ensurePackageDependencies(dir: string, actions: Action[]) {
+  const logsDir = makeLogsDir(dir);
+  const packageManager = detectPackageManager(dir);
+  actions.push({
+    label: "Selected",
+    detail: `${packageManager.name} because ${packageManager.reason}.`,
+  });
+
+  if (!existsSync(path.join(dir, "node_modules"))) {
+    await mkdir(logsDir, { recursive: true });
+    await runLoggedCommand(
+      packageManager.installCommand,
+      packageManager.installArgs,
+      dir,
+      logsDir,
+      actions,
+    );
+  } else {
+    actions.push({
+      label: "Skipped",
+      detail: "dependency install because node_modules already exists.",
+    });
+  }
+
+  return { logsDir, packageManager };
+}
+
 async function wranglerIsAuthenticated(actions: Action[]): Promise<boolean> {
   const result = await runCommand("npx", ["--yes", "wrangler@latest", "whoami"], process.cwd());
   if (result.code === 0) {
@@ -378,7 +440,7 @@ async function deployWithWrangler(
   mode: DeployMode,
   dryRun: boolean,
   actions: Action[],
-) {
+): Promise<DeployResult> {
   const compatibilityDate = new Date().toISOString().slice(0, 10);
   const name = makeWorkerName(plan.source);
   const args = ["--yes", "wrangler@latest", "deploy"];
@@ -473,9 +535,99 @@ async function deployWithWrangler(
   };
 }
 
+async function deployPlan(
+  plan: DeployPlan,
+  mode: DeployMode,
+  dryRun: boolean,
+  actions: Action[],
+): Promise<DeployResult> {
+  if (plan.delegatedDeploy) {
+    return deployWithDelegatedTool(plan, mode, dryRun, actions);
+  }
+
+  return deployWithWrangler(plan, mode, dryRun, actions);
+}
+
+async function deployWithDelegatedTool(
+  plan: DeployPlan,
+  mode: DeployMode,
+  dryRun: boolean,
+  actions: Action[],
+): Promise<DeployResult> {
+  const delegated = plan.delegatedDeploy!;
+  const args = [...delegated.args];
+
+  if (dryRun) {
+    args.push(...delegated.dryRunArgs);
+  } else if (mode === "temporary Cloudflare preview account") {
+    actions.push({
+      label: "Warning",
+      detail: `${delegated.toolName} deploy does not currently expose dply's temporary-account flag; dply will delegate and report the exact result.`,
+    });
+  }
+
+  actions.push({
+    label: "Running",
+    detail: `${delegated.command} ${args.join(" ")}`,
+  });
+
+  const result = await runCommand(delegated.command, args, plan.root);
+  const output = `${result.stdout}\n${result.stderr}`;
+
+  if (result.code !== 0) {
+    const logPath = await saveFailureLog(plan.root, delegated.logName, output);
+    throw new DplyError({
+      code: delegated.failureCode,
+      message: `${delegated.toolName} deploy failed with exit code ${result.code}.`,
+      inspected: [plan.source],
+      actions,
+      nextSteps: [
+        "Report this failure exactly to the user.",
+        `Full log: ${logPath}`,
+        "If this looks like a dply bug or missing support, detailed GitHub issues are helpful.",
+      ],
+      relevantOutput: output.trim().split("\n").slice(-20),
+    });
+  }
+
+  actions.push({
+    label: dryRun ? "Checked" : "Deployed",
+    detail: dryRun
+      ? `${delegated.toolName} dry-run completed successfully.`
+      : `${delegated.toolName} deploy completed successfully.`,
+  });
+
+  const urls = [...output.matchAll(/https:\/\/[^\s]+\.workers\.dev[^\s]*/g)].map((match) =>
+    cleanUrl(match[0]),
+  );
+  const claimUrl = output.match(
+    /https:\/\/dash\.cloudflare\.com\/claim-preview\?claimToken=[^\s]+/,
+  )?.[0];
+  const liveUrl = urls.at(-1);
+  let verification: { ok: boolean; status?: number; error?: string } | undefined;
+
+  if (!dryRun && liveUrl) {
+    verification = await verifyUrl(liveUrl);
+    actions.push({
+      label: "Verified",
+      detail: verification.ok
+        ? `HTTP request to ${liveUrl} returned ${verification.status}.`
+        : `HTTP request to ${liveUrl} failed: ${verification.error ?? verification.status}.`,
+    });
+  }
+
+  return {
+    name: makeWorkerName(plan.source),
+    output,
+    liveUrl,
+    claimUrl,
+    verification,
+  };
+}
+
 function printSuccess(input: {
   plan: DeployPlan;
-  deploy: Awaited<ReturnType<typeof deployWithWrangler>>;
+  deploy: DeployResult;
   mode: DeployMode;
   dryRun: boolean;
   actions: Action[];
@@ -612,6 +764,21 @@ function looksLikeVite(packageJson: PackageJson) {
     allDeps["vite-plus"] ||
     packageJson.scripts?.dev?.includes("vite") ||
     packageJson.scripts?.build?.includes("vite"),
+  );
+}
+
+function looksLikeNext(packageJson: PackageJson, dir: string) {
+  const allDeps = {
+    ...packageJson.dependencies,
+    ...packageJson.devDependencies,
+  };
+  return Boolean(
+    allDeps.next ||
+    packageJson.scripts?.dev?.includes("next") ||
+    packageJson.scripts?.build?.includes("next") ||
+    existsSync(path.join(dir, "next.config.js")) ||
+    existsSync(path.join(dir, "next.config.mjs")) ||
+    existsSync(path.join(dir, "next.config.ts")),
   );
 }
 

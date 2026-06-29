@@ -1,0 +1,29 @@
+name: temporary deploy smoke
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 9 * * 1"
+
+jobs:
+  temporary-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v3
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - name: Deploy fixtures with unauthenticated Wrangler temporary accounts
+        shell: bash
+        run: |
+          set -euo pipefail
+          redact_claims() {
+            sed -E 's/(claimToken=)[^[:space:]]+/\1REDACTED/g'
+          }
+
+          ./dist/dply fixtures/single-html/index.html 2>&1 | redact_claims
+          ./dist/dply fixtures/static-site 2>&1 | redact_claims
+          ./dist/dply fixtures/vite-app 2>&1 | redact_claims

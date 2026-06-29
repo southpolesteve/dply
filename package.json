@@ -1,6 +1,6 @@
 {
   "name": "dply",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "No auth. No config. Just deploy.",
   "type": "module",
@@ -13,8 +13,11 @@
     "deploy:site": "bun run build && npx --yes wrangler@latest deploy",
     "dev": "vp dev --host 0.0.0.0",
     "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
     "lint": "oxlint",
-    "smoke:dry": "bun run src/main.ts --dry-run fixtures/single-html/index.html && bun run src/main.ts --dry-run fixtures/static-site && bun run src/main.ts --dry-run fixtures/vite-app",
+    "smoke:dry": "bun run smoke:dry:core && bun run smoke:dry:frameworks",
+    "smoke:dry:core": "./dist/dply --dry-run fixtures/single-html/index.html && ./dist/dply --dry-run fixtures/static-site && ./dist/dply --dry-run fixtures/worker-js/index.js",
+    "smoke:dry:frameworks": "./dist/dply --dry-run fixtures/vite-app && ./dist/dply --dry-run fixtures/next-app",
     "start": "bun run src/main.ts"
   },
   "dependencies": {

@@ -22,9 +22,10 @@ because `dply` deliberately runs Wrangler instead of replacing it.
 
 ## What It Does
 
-- detects static files, static folders, Vite apps, and obvious Worker files
+- detects static files, static folders, Vite apps, Next.js apps, and obvious Worker files
 - installs dependencies and runs builds when the local project clearly needs it
 - shells out to `npx --yes wrangler@latest`
+- delegates Next.js projects to `npx --yes vinext@latest deploy`
 - uses temporary Cloudflare preview accounts when Wrangler is not authenticated
 - verifies the deployed URL
 - prints labeled output designed for coding agents
@@ -42,3 +43,8 @@ bun run lint
 bun run build
 bun run smoke:dry
 ```
+
+GitHub Actions runs format check, typecheck, lint, build, and dry-run fixture
+smokes for single HTML, static folders, Worker JS, Vite, and Next.js via Vinext.
+A separate weekly/manual workflow runs real unauthenticated temporary deploy
+smokes with claim tokens redacted from public logs.

@@ -9,3 +9,8 @@ dist
 fixtures/**/node_modules
 fixtures/**/package-lock.json
 fixtures/**/dist
+fixtures/**/.next
+fixtures/**/.wrangler
+fixtures/**/vite.config.ts
+fixtures/**/worker
+fixtures/**/wrangler.jsonc
