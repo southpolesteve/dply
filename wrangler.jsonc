@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "dply-site",
+  "compatibility_date": "2026-06-29",
+  "assets": {
+    "directory": "./dist/site",
+    "not_found_handling": "single-page-application",
+  },
+  "routes": [
+    {
+      "pattern": "dply.southpolesteve.com",
+      "custom_domain": true,
+    },
+  ],
+}
