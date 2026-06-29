@@ -13,7 +13,7 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v6
-      - uses: oven-sh/setup-bun@v3
+      - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
       - run: bun run format:check
       - run: bun run check
