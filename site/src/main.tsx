@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import "./styles.css";
 
 const installCommand = "curl -fsSL https://dply.southpolesteve.com/install.sh | bash";
+const repoUrl = "https://github.com/southpolesteve/dply";
 const skillUrl = "https://dply.southpolesteve.com/SKILL.md";
 
 const examples = [
@@ -76,7 +77,7 @@ function App() {
         <p>
           Point an agent at the skill URL. For agents that support persistent skills, install the
           <code> skills/dply </code>
-          folder from the repo.
+          folder from the <a href={repoUrl}>repo</a>.
         </p>
         <Surface className="command">
           <span className="prompt" aria-hidden="true">
@@ -87,6 +88,10 @@ function App() {
           </a>
         </Surface>
       </section>
+
+      <footer className="footer">
+        <a href={repoUrl}>Source on GitHub</a>
+      </footer>
     </main>
   );
 }

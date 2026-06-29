@@ -139,6 +139,21 @@ code {
   white-space: nowrap;
 }
 
+.agentSection p a,
+.footer a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-underline-offset: 3px;
+}
+
+.footer {
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.95rem;
+  padding-top: 22px;
+}
+
 @media (max-width: 640px) {
   .page {
     padding: 36px 18px 54px;
