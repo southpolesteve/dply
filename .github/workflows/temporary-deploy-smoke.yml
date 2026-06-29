@@ -27,3 +27,5 @@ jobs:
           ./dist/dply fixtures/single-html/index.html 2>&1 | redact_claims
           ./dist/dply fixtures/static-site 2>&1 | redact_claims
           ./dist/dply fixtures/vite-app 2>&1 | redact_claims
+          ./dist/dply fixtures/vue-app 2>&1 | redact_claims
+          ./dist/dply fixtures/svelte-app 2>&1 | redact_claims
