@@ -1,175 +1,92 @@
 import "@cloudflare/kumo/styles/standalone";
-import { LinkButton, Surface } from "@cloudflare/kumo";
-import { CloudArrowUp, Code, GitBranch, TerminalWindow } from "@phosphor-icons/react";
+import { Surface } from "@cloudflare/kumo";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 
 const installCommand = "curl -fsSL https://dply.southpolesteve.com/install.sh | bash";
 const skillUrl = "https://dply.southpolesteve.com/SKILL.md";
 
-const supportedTargets = [
-  "Vite",
-  "Next.js",
-  "Vue",
-  "Svelte",
-  "static HTML",
-  "Workers",
-  "other build-to-static frameworks",
-];
-
 const examples = [
   {
     command: "dply",
     label: "Deploy the current directory.",
-    icon: TerminalWindow,
   },
   {
     command: "dply index.html",
-    label: "Deploy one static page.",
-    icon: Code,
+    label: "Deploy one HTML file.",
   },
   {
-    command: "dply ./my-app",
-    label: "Deploy a local app folder.",
-    icon: GitBranch,
+    command: "dply ./public",
+    label: "Deploy a static folder.",
+  },
+  {
+    command: "dply ./vite-app",
+    label: "Deploy Vite, Vue, Svelte, and similar apps.",
+  },
+  {
+    command: "dply ./next-app",
+    label: "Deploy Next.js through Vinext.",
+  },
+  {
+    command: "dply index.js",
+    label: "Deploy a Worker-like JS or TS entrypoint.",
   },
 ];
 
 function App() {
   return (
     <main className="page">
-      <nav className="topbar" aria-label="Primary">
-        <a className="brand" href="/" aria-label="dply home">
-          <span className="brandMark" aria-hidden="true">
-            dp
+      <header className="hero">
+        <p className="brand">dply</p>
+        <h1>
+          <span>No auth.</span>
+          <span>No config.</span>
+          <span>Just deploy.</span>
+        </h1>
+        <p className="lede">
+          A tiny wrapper around Wrangler for agents that need to put local files on the internet.
+          Works with static HTML, Vite, Vue, Svelte, Next.js, Workers, and other frameworks that
+          build to static assets.
+        </p>
+      </header>
+
+      <section className="section">
+        <h2>Install</h2>
+        <Surface className="command">
+          <span className="prompt" aria-hidden="true">
+            $
           </span>
-          <span>dply</span>
-        </a>
-        <a className="navLink" href="https://github.com/southpolesteve/dply">
-          GitHub
-        </a>
-      </nav>
-
-      <section className="hero">
-        <div className="heroCopy">
-          <p className="eyebrow">
-            <span className="statusDot" aria-hidden="true" />
-            Agent deploy primitive
-          </p>
-          <h1>No auth. No config. Just deploy.</h1>
-          <p className="lede">
-            A tiny wrapper around Wrangler for agents that need to put local files on the internet.
-            Supports Vite, Next.js, Vue, Svelte, and other frameworks that build to static assets.
-          </p>
-          <Surface className="command">
-            <span className="prompt" aria-hidden="true">
-              $
-            </span>
-            <code>{installCommand}</code>
-          </Surface>
-          <div className="actions">
-            <LinkButton href="#usage" variant="primary" icon={CloudArrowUp}>
-              Deploy something
-            </LinkButton>
-            <LinkButton
-              href="https://github.com/southpolesteve/dply"
-              variant="secondary"
-              icon={GitBranch}
-            >
-              GitHub
-            </LinkButton>
-          </div>
-        </div>
-
-        <Surface className="transcript" aria-label="Example dply deployment transcript">
-          <div className="terminalBar">
-            <span className="terminalDots" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-            </span>
-            <span>dply transcript</span>
-          </div>
-          <div className="terminalBody">
-            <p>
-              <span className="shell">$</span>
-              <code>dply ./my-app</code>
-            </p>
-            <p>
-              <span className="verb">Detected</span>
-              Vite app with a build script.
-            </p>
-            <p>
-              <span className="verb">Selected</span>
-              Cloudflare temporary preview.
-            </p>
-            <p>
-              <span className="verb">Deployed</span>
-              Live URL ready.
-            </p>
-            <p>
-              <span className="verb success">Verified</span>
-              HTTP 200.
-            </p>
-          </div>
+          <code>{installCommand}</code>
         </Surface>
       </section>
 
-      <section className="support" aria-label="Supported project types">
-        <span>Works with</span>
-        <ul>
-          {supportedTargets.map((target) => (
-            <li key={target}>{target}</li>
+      <section className="section">
+        <h2>Examples</h2>
+        <div className="exampleList">
+          {examples.map((example) => (
+            <Surface className="example" key={example.command}>
+              <code>{example.command}</code>
+              <span>{example.label}</span>
+            </Surface>
           ))}
-        </ul>
-      </section>
-
-      <section id="usage" className="usage">
-        <div className="sectionIntro">
-          <p className="eyebrow">Usage</p>
-          <h2>One command from the project folder.</h2>
-          <p>
-            Run it where the agent wrote the files. <code>dply</code> explains what it inferred,
-            what it ran, and what URL is live.
-          </p>
-        </div>
-
-        <div className="exampleGrid">
-          {examples.map((example) => {
-            const Icon = example.icon;
-
-            return (
-              <Surface className="example" key={example.command}>
-                <Icon className="exampleIcon" size={22} weight="duotone" aria-hidden="true" />
-                <code>{example.command}</code>
-                <span>{example.label}</span>
-              </Surface>
-            );
-          })}
         </div>
       </section>
 
-      <section className="agentNote" aria-label="Agent output contract">
-        <div>
-          <p className="eyebrow">For agents</p>
-          <h2>Readable logs, not magic.</h2>
-        </div>
-        <div className="noteText">
-          <p>
-            Every deploy prints the detected project shape, selected adapter, command logs, live
-            URL, claim path for temporary previews, and verification result.
-          </p>
-          <Surface className="skillCallout">
-            <span>Agent skill</span>
-            <a href="/SKILL.md">
-              <code>{skillUrl}</code>
-            </a>
-          </Surface>
-          <p>
-            Point an agent at the skill URL for one-off use. If it supports persistent skills,
-            install the <code>skills/dply</code> folder from the repo.
-          </p>
-        </div>
+      <section className="section agentSection">
+        <h2>For agents</h2>
+        <p>
+          Point an agent at the skill URL. For agents that support persistent skills, install the
+          <code> skills/dply </code>
+          folder from the repo.
+        </p>
+        <Surface className="command">
+          <span className="prompt" aria-hidden="true">
+            $
+          </span>
+          <a href="/SKILL.md">
+            <code>{skillUrl}</code>
+          </a>
+        </Surface>
       </section>
     </main>
   );
