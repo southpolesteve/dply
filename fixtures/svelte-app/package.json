@@ -1,0 +1,12 @@
+{
+  "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@sveltejs/vite-plugin-svelte": "7.1.2",
+    "svelte": "5.56.4",
+    "vite": "8.1.0"
+  },
+  "devDependencies": {}
+}

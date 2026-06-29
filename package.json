@@ -17,7 +17,7 @@
     "lint": "oxlint",
     "smoke:dry": "bun run smoke:dry:core && bun run smoke:dry:frameworks",
     "smoke:dry:core": "./dist/dply --dry-run fixtures/single-html/index.html && ./dist/dply --dry-run fixtures/static-site && ./dist/dply --dry-run fixtures/worker-js/index.js",
-    "smoke:dry:frameworks": "./dist/dply --dry-run fixtures/vite-app && ./dist/dply --dry-run fixtures/next-app",
+    "smoke:dry:frameworks": "./dist/dply --dry-run fixtures/vite-app && ./dist/dply --dry-run fixtures/vue-app && ./dist/dply --dry-run fixtures/svelte-app && ./dist/dply --dry-run fixtures/next-app",
     "start": "bun run src/main.ts"
   },
   "dependencies": {

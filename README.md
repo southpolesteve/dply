@@ -45,6 +45,6 @@ bun run smoke:dry
 ```
 
 GitHub Actions runs format check, typecheck, lint, build, and dry-run fixture
-smokes for single HTML, static folders, Worker JS, Vite, and Next.js via Vinext.
-A separate weekly/manual workflow runs real unauthenticated temporary deploy
-smokes with claim tokens redacted from public logs.
+smokes for single HTML, static folders, Worker JS, Vite, Vue, Svelte, and
+Next.js via Vinext. A separate weekly/manual workflow runs real unauthenticated
+temporary deploy smokes with claim tokens redacted from public logs.
