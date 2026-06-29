@@ -17,6 +17,9 @@ dply ./site
 curl -fsSL https://dply.southpolesteve.com/install.sh | bash
 ```
 
+The installed command is a tiny Node script. It requires Node.js 20+ and `npx`
+because `dply` deliberately runs Wrangler instead of replacing it.
+
 ## What It Does
 
 - detects static files, static folders, Vite apps, and obvious Worker files

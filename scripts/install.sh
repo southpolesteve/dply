@@ -12,9 +12,16 @@ need() {
   fi
 }
 
-need uname
 need mkdir
 need chmod
+need node
+need npx
+
+if ! node -e 'const major = Number(process.versions.node.split(".")[0]); process.exit(major >= 20 ? 0 : 1)' >/dev/null 2>&1; then
+  echo "dply requires Node.js 20 or newer." >&2
+  echo "Wrangler runs through npx, so Node/npm are part of the deployment path." >&2
+  exit 1
+fi
 
 if command -v curl >/dev/null 2>&1; then
   download() { curl -fsSL "$1" -o "$2"; }
@@ -25,19 +32,7 @@ else
   exit 1
 fi
 
-case "$(uname -s)" in
-  Darwin) os="darwin" ;;
-  Linux) os="linux" ;;
-  *) echo "Unsupported OS: $(uname -s)" >&2; exit 1 ;;
-esac
-
-case "$(uname -m)" in
-  arm64|aarch64) arch="arm64" ;;
-  x86_64|amd64) arch="x64" ;;
-  *) echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
-esac
-
-asset="dply-${os}-${arch}"
+asset="dply"
 if [ "$DPLY_VERSION" = "latest" ]; then
   default_base_url="https://github.com/southpolesteve/dply/releases/latest/download"
 else
